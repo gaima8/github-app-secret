@@ -13,11 +13,6 @@ on:
     branches:
       - "main"
 
-permissions:
-  contents: read # git checkout
-  packages: write # ghcr access
-  id-token: write # sign images
-
 jobs:
   ko-publish:
     runs-on: ubuntu-latest
@@ -26,6 +21,7 @@ jobs:
       issues: write # to be able to comment on released issues
       pull-requests: write # to be able to comment on released pull requests
       id-token: write # to enable use of OIDC for npm provenance
+      packages: write # ghcr access
     steps:
       - name: Checkout
         uses: actions/checkout@v3
