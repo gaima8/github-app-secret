@@ -1,15 +1,17 @@
+---
 name: release
 
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
     inputs:
-      tag:
-        description: 'image tag prefix'
-        default: 'rc'
+      dry_run:
+        description: "Get a preview of the pending release"
+        type: boolean
         required: true
+        default: false
+  push:
+    branches:
+      - "main"
 
 permissions:
   contents: read # git checkout
@@ -25,6 +27,14 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: '1.20'
+      - name: Run semantic-release
+        uses: cycjimmy/semantic-release-action@v4
+        id: semantic-release
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        with:
+          dry_run: "${{ github.event.inputs.dry_run }}"
+          working_directory: ./.github
       - name: Prepare
         id: prep
         run: |
@@ -33,7 +43,8 @@ jobs:
             VERSION=${GITHUB_REF/refs\/tags\//}
           fi
           echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
-      - uses: ko-build/setup-ko@v0.6
+      - name: Setup ko-build
+        uses: ko-build/setup-ko@v0.6
         env:
           KO_DOCKER_REPO: ghcr.io/${{ github.repository }}
       - name: Login to GitHub Container Registry
@@ -43,12 +54,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build
+        if: steps.semantic-release.outputs.new_release_published == 'true'
         run: |
           ko build --bare ./cmd/github-app-secret -t $TAG \
             --platform linux/amd64,linux/arm64,linux/arm/v7 \
             --image-refs refs.txt
         env:
-          TAG: ${{ steps.prep.outputs.VERSION }}
+          TAG: ${{ steps.semantic-release.outputs.new_release_version }}
       - name: cosign-installer
         uses: sigstore/cosign-installer@v3.0.5
       - name: Sign images
