@@ -1,4 +1,4 @@
-KO_DOCKER_REPO ?= ghcr.io/fluxcd-community
+KO_DOCKER_REPO ?= ghcr.io/gaima8
 TAG ?= latest
 
 all: build

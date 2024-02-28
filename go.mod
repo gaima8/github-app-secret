@@ -1,4 +1,4 @@
-module github.com/fluxcd-community/github-app-secret
+module github.com/gaima8/github-app-secret
 
 go 1.19
 
