@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	gas "github.com/fluxcd-community/github-app-secret"
+	gas "github.com/gaima8/github-app-secret"
 )
 
 func TestValidateInput(t *testing.T) {

@@ -11,7 +11,7 @@ spec:
           serviceAccountName: "github-app-secret"
           containers:
             - name: github-app-secret
-              image: ghcr.io/fluxcd-community/github-app-secret
+              image: ghcr.io/gaima8/github-app-secret
               imagePullPolicy: IfNotPresent
               args:
                 - "-v=3"
