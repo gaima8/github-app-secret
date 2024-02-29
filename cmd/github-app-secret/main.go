@@ -49,7 +49,7 @@ func main() {
 	flag.StringVar(&cf.secretNamespace, "secretNamespace", "", "Namespace of the Secret to store the token in")
 	flag.StringVar(&cf.argocdType, "argocdType", "git", "ArgoCD Repository Credentials type")
 	flag.StringVar(&cf.argocdURL, "argocdURL", "", "ArgoCD URL Repository Credential")
-	flag.StringVar(&cf.username, "AccessTokenUsername", "x-access-token", "Username field value in the Secret")
+	flag.StringVar(&cf.username, "username", "x-access-token", "Username field value in the Secret")
 
 	flag.Parse()
 
