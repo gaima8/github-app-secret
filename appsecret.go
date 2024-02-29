@@ -12,10 +12,10 @@ import (
 )
 
 const (
-	SecretGit   string = "git"
-	SecretPlain string = "plain"
-
-	AccessTokenUsername = "x-access-token"
+	SecretGit            string = "git"
+	SecretPlain          string = "plain"
+	SecretArgoCD         string = "argocd"
+	SecretArgoCDTemplate string = "argocd-template"
 )
 
 // AppSecret helps generates Github app auth token and save it in a Kubernetes
@@ -28,10 +28,13 @@ type AppSecret struct {
 	privateKey     string
 	appID          int64
 	installationID int64
+	argocdType     string
+	argocdURL      string
+	username       string
 }
 
 // NewAppSecret constructs and returns a new AppSecret instance.
-func NewAppSecret(kclient client.Client, log logr.Logger, apiURL, privateKey string, appID, installationID int64) *AppSecret {
+func NewAppSecret(kclient client.Client, log logr.Logger, apiURL, privateKey string, appID, installationID int64, argocdType string, argocdURL string, username string) *AppSecret {
 	return &AppSecret{
 		Client:         kclient,
 		log:            log,
@@ -39,6 +42,9 @@ func NewAppSecret(kclient client.Client, log logr.Logger, apiURL, privateKey str
 		privateKey:     privateKey,
 		appID:          appID,
 		installationID: installationID,
+		argocdType:     argocdType,
+		argocdURL:      argocdURL,
+		username:       username,
 	}
 }
 
@@ -74,22 +80,27 @@ func (as *AppSecret) CreateOrUpdateSecret(ctx context.Context, namespacedName cl
 	secret.Namespace = namespacedName.Namespace
 
 	_, err := controllerutil.CreateOrPatch(ctx, as.Client, secret, func() error {
-		populateSecret(secret, secretType, token)
+		populateSecret(secret, secretType, token, as.argocdType, as.argocdURL, as.username)
 		return nil
 	})
 	return err
 }
 
-func populateSecret(secret *corev1.Secret, secretType, token string) {
+func populateSecret(secret *corev1.Secret, secretType, token string, argocdType string, argocdURL string, username string) {
 	if secret.StringData == nil {
 		secret.StringData = map[string]string{}
 	}
 
 	switch secretType {
 	case SecretGit:
-		secret.StringData["username"] = AccessTokenUsername
+		secret.StringData["username"] = username
 		secret.StringData["password"] = token
 	case SecretPlain:
 		secret.StringData["token"] = token
+	case SecretArgoCD, SecretArgoCDTemplate:
+		secret.StringData["username"] = username
+		secret.StringData["password"] = token
+		secret.StringData["type"] = argocdType
+		secret.StringData["url"] = argocdURL
 	}
 }

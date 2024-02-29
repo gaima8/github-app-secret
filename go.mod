@@ -1,6 +1,8 @@
 module github.com/gaima8/github-app-secret
 
-go 1.19
+go 1.21
+
+toolchain go1.21.6
 
 require (
 	github.com/bradleyfalzon/ghinstallation/v2 v2.9.0
