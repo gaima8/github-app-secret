@@ -1,1 +1,1 @@
-defaultBaseImage: alpine:3.17
+defaultBaseImage: alpine:3.19
