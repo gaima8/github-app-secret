@@ -69,6 +69,10 @@ default type of Secret. It creates secret data with `username` field
 For just the auth token, the secret of type `plain` can be used. This can be
 configured in `github-app-secret` by using `--secretType` flag.
 
+Declarative ArgoCD Repository Credential Secrets can be generated with the types `argocd` or `argocd-template`. The former for `argocd.argoproj.io/secret-type: repository` for a single repository, the latter for `argocd.argoproj.io/secret-type: repo-creds` for a credential template.
+
+Labels will not be updated if the secret type is changed. You must delete the Secret and allow github-app-secret to recreate it.
+
 For Github Enterprise, the Github API URL can be configured with `--apiURL`
 flag.
 

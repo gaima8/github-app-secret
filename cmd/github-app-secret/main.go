@@ -30,6 +30,9 @@ type cmdFlags struct {
 	timeout         time.Duration
 	secretName      string
 	secretNamespace string
+	argocdType      string
+	argocdURL       string
+	username        string
 }
 
 func main() {
@@ -40,10 +43,13 @@ func main() {
 	flag.Int64Var(&cf.appID, "appID", 0, "Github App ID")
 	flag.Int64Var(&cf.installationID, "installationID", 0, "Github App Installation ID")
 	flag.StringVar(&cf.privateKeyPath, "privateKeyPath", "", "Path to the Github App private key")
-	flag.StringVar(&cf.secretType, "secretType", gas.SecretGit, "Type of secret to create [git, plain]")
+	flag.StringVar(&cf.secretType, "secretType", gas.SecretGit, "Type of secret to create [git, plain, argocd, argocd-template]")
 	flag.DurationVar(&cf.timeout, "timeout", 15*time.Second, "Timeout for token generation and secret creation")
 	flag.StringVar(&cf.secretName, "secretName", "", "Name of the Secret to store the token in")
 	flag.StringVar(&cf.secretNamespace, "secretNamespace", "", "Namespace of the Secret to store the token in")
+	flag.StringVar(&cf.argocdType, "argocdType", "git", "ArgoCD Repository Credentials type")
+	flag.StringVar(&cf.argocdURL, "argocdURL", "", "ArgoCD URL Repository Credential")
+	flag.StringVar(&cf.username, "username", "x-access-token", "Username field value in the Secret")
 
 	flag.Parse()
 
@@ -79,7 +85,7 @@ func main() {
 		Name:      cf.secretName,
 		Namespace: namespace,
 	}
-	err = gas.NewAppSecret(kclient, logger, cf.apiURL, cf.privateKeyPath, cf.appID, cf.installationID).
+	err = gas.NewAppSecret(kclient, logger, cf.apiURL, cf.privateKeyPath, cf.appID, cf.installationID, cf.argocdType, cf.argocdURL, cf.username).
 		GenerateAndCreate(ctx, secretKey, cf.secretType)
 	if err != nil {
 		logger.Error(err, "failed to generate token and create secret")
@@ -111,6 +117,13 @@ func validateInput(cf *cmdFlags) error {
 
 	switch cf.secretType {
 	case gas.SecretPlain, gas.SecretGit:
+	case gas.SecretArgoCD, gas.SecretArgoCDTemplate:
+		if cf.argocdType == "" {
+			return errors.New("ArgoCD Secret types require a Repository Credentials type, set with --argocdType")
+		}
+		if cf.argocdURL == "" {
+			return errors.New("ArgoCD Secret types require a URL, set with --argocdURL")
+		}
 	default:
 		return fmt.Errorf("invalid secret type %q", cf.secretType)
 	}
