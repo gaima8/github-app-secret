@@ -79,6 +79,15 @@ func (as *AppSecret) CreateOrUpdateSecret(ctx context.Context, namespacedName cl
 	secret.Name = namespacedName.Name
 	secret.Namespace = namespacedName.Namespace
 
+	switch secretType {
+	case SecretArgoCD:
+		secret.Annotations = map[string]string{}
+		secret.Annotations["argocd.argoproj.io/secret-type"] = "repository"
+	case SecretArgoCDTemplate:
+		secret.Annotations = map[string]string{}
+		secret.Annotations["argocd.argoproj.io/secret-type"] = "repo-creds"
+	}
+
 	_, err := controllerutil.CreateOrPatch(ctx, as.Client, secret, func() error {
 		populateSecret(secret, secretType, token, as.argocdType, as.argocdURL, as.username)
 		return nil
