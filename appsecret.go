@@ -81,11 +81,11 @@ func (as *AppSecret) CreateOrUpdateSecret(ctx context.Context, namespacedName cl
 
 	switch secretType {
 	case SecretArgoCD:
-		secret.Annotations = map[string]string{}
-		secret.Annotations["argocd.argoproj.io/secret-type"] = "repository"
+		secret.Labels = map[string]string{}
+		secret.Labels["argocd.argoproj.io/secret-type"] = "repository"
 	case SecretArgoCDTemplate:
-		secret.Annotations = map[string]string{}
-		secret.Annotations["argocd.argoproj.io/secret-type"] = "repo-creds"
+		secret.Labels = map[string]string{}
+		secret.Labels["argocd.argoproj.io/secret-type"] = "repo-creds"
 	}
 
 	_, err := controllerutil.CreateOrPatch(ctx, as.Client, secret, func() error {
